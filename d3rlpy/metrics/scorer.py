@@ -285,7 +285,7 @@ def true_q_scorer(
             actions = algo.predict([batch.observations[0]])
             values = algo.predict_value([batch.observations[0]], actions)
             mask = (1.0 - np.asarray(batch.terminals)).reshape(-1)
-            rewards = np.asarray(batch.next_rewards).reshape(-1)
+            rewards = np.asarray(batch.rewards).reshape(-1)
             if algo.reward_scaler:
                 rewards = algo.reward_scaler.transform_numpy(rewards)
             y = rewards + algo.gamma * cast(np.ndarray, values) * mask
