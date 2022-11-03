@@ -275,6 +275,23 @@ def initial_state_value_estimation_scorer(
     return float(np.mean(total_values))
 
 
+def true_q_scorer(
+    algo: AlgoProtocol, episodes: List[Episode]
+) -> float:
+    
+    for episode in episodes:
+        for batch in _make_batches(episode, WINDOW_SIZE, algo.n_frames):
+            # estimate action-value in initial states
+            actions = algo.predict([batch.observations[0]])
+            values = algo.predict_value([batch.observations[0]], actions)
+            mask = (1.0 - np.asarray(batch.terminals)).reshape(-1)
+            rewards = np.asarray(batch.next_rewards).reshape(-1)
+            if algo.reward_scaler:
+                rewards = algo.reward_scaler.transform_numpy(rewards)
+            y = rewards + algo.gamma * cast(np.ndarray, values) * mask
+    return float(np.mean(y))
+
+
 def soft_opc_scorer(
     return_threshold: float,
 ) -> Callable[[AlgoProtocol, List[Episode]], float]:
